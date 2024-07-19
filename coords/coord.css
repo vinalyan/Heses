@@ -54,16 +54,11 @@ svg .hex.selected {
 	stroke-dasharray: none;
 }
 
-
-
-
 svg .hex.tip {
 	stroke: yellow;
 	stroke-width: 3;
 	stroke-dasharray: 4 4;
 }
-
-
 
 
 #coords {
