@@ -9,13 +9,18 @@ const max = Math.max
 const min = Math.min
 const abs = Math.abs
 
+const dist = 3
+
 
 /// тут заканчиваются временные переменные
 
 
 let ui = {
 	hexes: [],
-	textes: [],
+	t_ids: [],
+	t_qs: [],
+	t_rs: [],
+	t_ss: [],
 	hex_x: [],
 	hex_y: [],
     units: [],
@@ -46,30 +51,23 @@ function is_hex_selected(hex) {
 
 //TODO выпилить это штука тут нужна для дебага
 
-/*function hex_to_coordinates(h){
-	let q = Math.floor(h / hexh)
-	let r
-	if (Math.floor(h / hexh)%2==1) {
-		r = h% hexh*2
-	} else {
-		r = h % hexh*2 +1
-	}
-	let s = 0-q-r
-	return {q,r,s}
-}*/
+
 
 function hex_to_coordinates(h){
 	let q = Math.floor(h / hexh)
-	let r = h% hexh
+	let r = h% hexh - Math.floor((q+1) / 2)
 	let s = 0-q-r
 	return {q,r,s}
 }
 
+
+
 function calc_distance(a, b) {
-	let ay = a % hexh, ax = (a / hexh)|0, az = -ax - ay
-	let by = b % hexh, bx = (b / hexh)|0, bz = -bx - by
-	return max(abs(bx-ax), abs(by-ay), abs(bz-az))
+	let hex_a = hex_to_coordinates(a)
+	let hex_b = hex_to_coordinates(b)
+	return max(abs(hex_b.q-hex_a.q), abs(hex_b.r-hex_a.r), abs(hex_b.s-hex_a.s))
 }
+
 
 // количество вертрикальных гексов
 const hexh = 8
@@ -122,7 +120,6 @@ function build_hexes() {
                 let y = (num_v * hex_v*2) - (hex_v*(num_h%2)) + yoff //тут учитываем, что каждая четная колонка ниже нечетной
                 let hex_id = num_h * hexh + num_v
                 let hex = ui.hexes[hex_id] = document.createElementNS(svgNS, "polygon") 
-				let text = ui.textes[hex_id] = document.createElementNS(svgNS, "text");
 
                 ui.hex_x[hex_id] = round(x)	
                 ui.hex_y[hex_id] = round(y)
@@ -136,16 +133,49 @@ function build_hexes() {
 				hex.classList.add("action")
 
 				// Создание текстового элемента для отображения текста в шестиугольнике
-				text.setAttribute("x", ui.hex_x[hex_id]); // Позиция текста по оси X
-				text.setAttribute("y", ui.hex_y[hex_id]); // Позиция текста по оси Y
-				text.setAttribute("fill", "black"); // Цвет текста
-				text.setAttribute("font-size", "12"); // Размер шрифта текста
-				text.setAttribute("text-anchor", "middle"); // Выравнивание текста по центру
-				text.textContent = " "
-				text.id = hex_id
+				let t_hex = ui.t_ids[hex_id] = document.createElementNS(svgNS, "text");
+				t_hex.setAttribute("x", ui.hex_x[hex_id]); // Позиция текста по оси X
+				t_hex.setAttribute("y", ui.hex_y[hex_id]); // Позиция текста по оси Y
+				t_hex.setAttribute("fill", "black"); // Цвет текста
+				t_hex.setAttribute("font-size", "14"); // Размер шрифта текста
+				t_hex.setAttribute("text-anchor", "middle"); // Выравнивание текста по центру
+				t_hex.textContent = `h: ${hex_id}`
+				t_hex.id = hex_id
+
+				let t_q = ui.t_qs[hex_id] = document.createElementNS(svgNS, "text");
+				t_q.setAttribute("x", ui.hex_x[hex_id]); // Позиция текста по оси X
+				t_q.setAttribute("y", ui.hex_y[hex_id]-40); // Позиция текста по оси Y
+				t_q.setAttribute("fill", "black"); // Цвет текста
+				t_q.setAttribute("font-size", "14"); // Размер шрифта текста
+				t_q.setAttribute("text-anchor", "middle"); // Выравнивание текста по центру
+				t_q.id = hex_id
+				t_q.textContent = `q: ${hex_to_coordinates(hex_id).q}`
+
+				let t_r = ui.t_rs[hex_id] = document.createElementNS(svgNS, "text");
+				t_r.setAttribute("x", ui.hex_x[hex_id]+30); // Позиция текста по оси X
+				t_r.setAttribute("y", ui.hex_y[hex_id]+30); // Позиция текста по оси Y
+				t_r.setAttribute("fill", "black"); // Цвет текста
+				t_r.setAttribute("font-size", "14"); // Размер шрифта текста
+				t_r.setAttribute("text-anchor", "middle"); // Выравнивание текста по центру
+				t_r.id = hex_id
+				t_r.textContent = `r: ${hex_to_coordinates(hex_id).r}`
+
+				let t_s = ui.t_ss[hex_id] = document.createElementNS(svgNS, "text");
+				t_s.setAttribute("x", ui.hex_x[hex_id]-30); // Позиция текста по оси X
+				t_s.setAttribute("y", ui.hex_y[hex_id]+30); // Позиция текста по оси Y
+				t_s.setAttribute("fill", "black"); // Цвет текста
+				t_s.setAttribute("font-size", "14"); // Размер шрифта текста
+				t_s.setAttribute("text-anchor", "middle"); // Выравнивание текста по центру
+				t_s.id = hex_id
+				t_s.textContent = `s: ${hex_to_coordinates(hex_id).s}`
 
 				// Добавляем текстовый элемент в SVG канвас
-				document.getElementById("mapsvg").getElementById("hexes").appendChild(text);
+
+				document.getElementById("mapsvg").getElementById("hexes").appendChild(t_hex);
+				document.getElementById("mapsvg").getElementById("hexes").appendChild(t_q);
+				document.getElementById("mapsvg").getElementById("hexes").appendChild(t_r);
+				document.getElementById("mapsvg").getElementById("hexes").appendChild(t_s);
+
 
                 document.getElementById("mapsvg").getElementById("hexes").appendChild(hex)
             }
@@ -204,9 +234,6 @@ function update_map() {
 
 //количество отрядов в гексе.
 
-
-
-
 function on_focus_hex(evt) {
 	let hex = evt.target.hex
     let text = ui.hexes[hex].hex +'->'+ hex_to_coordinates(hex).q + ','+ hex_to_coordinates(hex).r+','+hex_to_coordinates(hex).s
@@ -214,23 +241,32 @@ function on_focus_hex(evt) {
 }
 
 function on_click_hex(evt) {
-	ui.hexes[evt.target.hex].classList.toggle("selected")
+	let hex  =evt.target.hex
+	ui.hexes[hex].classList.toggle("selected")
 
 	for (let h = 0; h < 72; h++) {
-		ui.textes[h].textContent = " "
-	
+		ui.t_ids[h].textContent = `h: ${h}`	
+		ui.t_qs[h].textContent = `${hex_to_coordinates(h).q}`
+		ui.t_rs[h].textContent = `${hex_to_coordinates(h).r}`
+		ui.t_ss[h].textContent = `${hex_to_coordinates(h).s}`
+
 		
-		ui.hexes[h]
-		if (calc_distance(evt.target.hex,h)<=1) {
+		if (calc_distance(hex,h)<=dist) {
 			ui.hexes[h].classList.toggle("adjacent")
-			let dis = calc_distance(h,evt.target.hex)
-			
-			ui.textes[h].textContent = `hex ${h}\n
+			let dis = calc_distance(h,hex)
+			ui.t_ids[h].textContent = `h: ${h} d: ${dis}`	
+			ui.t_qs[h].textContent = `q:${hex_to_coordinates(h).q}\n(${hex_to_coordinates(h).q - hex_to_coordinates(hex).q}) `
+			ui.t_rs[h].textContent = `r:${hex_to_coordinates(h).r}\n(${hex_to_coordinates(h).r - hex_to_coordinates(hex).r}) `
+			ui.t_ss[h].textContent = `s:${hex_to_coordinates(h).s}\n(${hex_to_coordinates(h).s - hex_to_coordinates(hex).s}) `
+
+
+			/*
+			ui.t_ids[h].textContent = `hex ${h}\n
 			d - ${dis}\n
 			coord ${hex_to_coordinates(h).q-hex_to_coordinates(evt.target.hex).q},
 			${hex_to_coordinates(h).r-hex_to_coordinates(evt.target.hex).r}
 			+ ${hex_to_coordinates(h).s-hex_to_coordinates(evt.target.hex).s}`; // Задаем текст для отображения
-			
+			*/
 
 		}
 
