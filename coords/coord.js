@@ -9,11 +9,10 @@ const max = Math.max
 const min = Math.min
 const abs = Math.abs
 
-const dist = 3
+const dist = 2
 
 
 /// тут заканчиваются временные переменные
-
 
 let ui = {
 	hexes: [],
