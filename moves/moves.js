@@ -8,7 +8,9 @@ const sqrt = Math.sqrt
 const max = Math.max
 const min = Math.min
 const abs = Math.abs
-const dist = 2
+const dist = 1
+
+
 
 const hexes_terrain =
 ["Clear","Clear","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Broken","Broken","Broken","Clear","Clear","Broken","Clear","Clear","Broken","Broken","Broken","Clear","Clear","Broken","Clear","Clear"]
@@ -25,7 +27,14 @@ let ui = {
     focus: null,
 	selected_hexes: [],
 	hexes_terrain: hexes_terrain,
+	path: [],
+
 }
+let unit = {
+	MF: 5,
+}
+
+const H_MF_COST = 1
 
 //ui.hexes_terrain = array
 
@@ -53,12 +62,17 @@ function is_hex_selected(hex) {
 //TODO выпилить это штука тут нужна для дебага
 
 
-
 function hex_to_coordinates(h){
 	let q = Math.floor(h / hexh)
 	let r = h% hexh - Math.floor((q+1) / 2)
 	let s = 0-q-r
 	return {q,r,s}
+}
+
+function calc_distance(a, b) {
+	let hex_a = hex_to_coordinates(a)
+	let hex_b = hex_to_coordinates(b)
+	return max(abs(hex_b.q-hex_a.q), abs(hex_b.r-hex_a.r), abs(hex_b.s-hex_a.s))
 }
 
 // количество вертрикальных гексов
@@ -164,14 +178,72 @@ function on_focus_hex(evt) {
 }
 
 function on_click_hex(evt) {
+	// снимаем тег активности со всех гексов. Это заплатка
 	let hex  =evt.target.hex
-	ui.hexes[hex].classList.toggle("selected")
-	ui.selected_hexes.push(hex)
+	for (let h = 0; h < mapsize; h++) {
+		ui.hexes[h].classList.remove("action")
+	}
+	start_new_path(hex)
+
 }
 
 function on_blur(evt) {
 	document.getElementById("status").textContent = ""
 }
+
+///---Это тут самое главное. 
+//запускаем путь. 
+// hex - стартовый гекс
+//MF количество очков движения юнита
+function start_new_path(hex){
+    // Проверяем наличие элемента hex в массиве path
+	if (ui.path.includes(hex)) {
+		let index = ui.path.indexOf(hex)
+		// Если элемент есть и он последний
+		if (index === ui.path.length - 1) {
+			console.log("Построение пути закончено. Надо сделать фейсинг")
+			console.log(`mf->${unit.MF}`)
+		} else {
+			// Удаляем все элементы после hex
+			let removed = ui.path.splice(index + 1, ui.path.length - index - 1)
+			removed.forEach(function(element) {
+				ui.hexes[element].classList.remove("selected")
+			});
+			unit.MF = unit.MF + removed.length
+			active_adjacents_for_move(hex, unit.MF)
+		}
+	} else {
+		// Если элемента нет, то добавляем
+		ui.path.push(hex);
+		ui.hexes[hex].classList.add("selected")
+		active_adjacents_for_move(hex,unit.MF)
+		unit.MF--
+	}
+	console.log("Итоговый массив path:", ui.path);
+	console.log(`mf->${unit.MF}`)
+	console.log(ui.path)
+}
+
+
+function active_adjacents_for_move(hex, mf)
+{
+	for (let h = 0; h < mapsize; h++) {
+		if (calc_distance(hex,h)<=dist & mf>=H_MF_COST )
+		{
+			ui.hexes[h].classList.add("action")
+		}
+}
+
+
+function facing(hex)
+{
+
+}
+
+
+
+///---Конец главного
+
 
 // КОНЕЦ СОБЫТИЙ МЫШИ И КЛАВЫ
 
@@ -189,4 +261,4 @@ document.addEventListener('mousemove', (event) => {
     coordsDiv.style.top = `${mouseY + 10}px`;
     coordsDiv.textContent = `X: ${mouseX}, Y: ${mouseY}}` ;
 });
-
+}
