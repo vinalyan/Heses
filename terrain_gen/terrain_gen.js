@@ -10,9 +10,8 @@ const min = Math.min
 const abs = Math.abs
 const dist = 2
 
-const array =
+const hexes_terrain =
 ["Clear","Clear","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Broken","Broken","Broken","Clear","Clear","Broken","Clear","Clear","Broken","Broken","Broken","Clear","Clear","Broken","Clear","Clear"]
-
 
 /// тут заканчиваются временные переменные
 
@@ -25,7 +24,7 @@ let ui = {
     units_holder: document.getElementById("units"),
     focus: null,
 	selected_hexes: [],
-	hexes_terrain: array,
+	hexes_terrain: hexes_terrain,
 }
 
 //ui.hexes_terrain = array
