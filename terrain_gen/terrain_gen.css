@@ -72,7 +72,11 @@ svg .hex.Broken {
 	fill: rgba(116, 240, 109, 0.3);
 	}
 	
+svg .hex.Rough {
+	fill: rgba(25, 75, 23, 0.3);
+	}
 	
+		
 	
 
 #coords {

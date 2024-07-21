@@ -8,8 +8,10 @@ const sqrt = Math.sqrt
 const max = Math.max
 const min = Math.min
 const abs = Math.abs
-
 const dist = 2
+
+const array =
+["Clear","Clear","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Broken","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Broken","Clear","Clear","Clear","Broken","Broken","Broken","Clear","Clear","Broken","Clear","Clear","Broken","Broken","Broken","Clear","Clear","Broken","Clear","Clear"]
 
 
 /// тут заканчиваются временные переменные
@@ -23,7 +25,10 @@ let ui = {
     units_holder: document.getElementById("units"),
     focus: null,
 	selected_hexes: [],
+	hexes_terrain: array,
 }
+
+//ui.hexes_terrain = array
 
 // СОСТОЯНИЕ ОТРЯДОВ 
 //Гекс отряда 
@@ -62,11 +67,9 @@ const hexh = 8
 // количество горизональных геков
 const hexw = 9
 //количество юнитов
+const mapsize=hexh*hexw
 const unit_count = 10
 
-let stack_list = new Array(hexh * hexw)
-for (let i = 0; i < stack_list.length; ++i)
-	stack_list[i] = []
 
 // Генерим гексы.
 
@@ -119,6 +122,7 @@ function build_hexes() {
 				hex.addEventListener("mouseleave", on_blur)        
                 hex.hex = hex_id
 				hex.classList.add("action")
+				hex.classList.add(ui.hexes_terrain[hex_id])
 
 				// Создание текстового элемента для отображения текста в шестиугольнике
 				let t_hex = ui.t_ids[hex_id] = document.createElementNS(svgNS, "text");
@@ -163,28 +167,12 @@ build_hexes()
 
 
 function update_map() {
-    for (let i = 0; i < stack_list.length; ++i) {
-		stack_list[i].length = 0
+	ui.selected_hexes = []
+	for (let hex = 0; hex < mapsize; hex++) {
+		ui.hexes[hex].classList.remove("selected", "Clear", "Broken", "Mountainous",  "Lowland", "Flood")
+		ui.hexes[hex].classList.toggle(ui.hexes_terrain[hex])
 	}
-	for (let u = 0; u < unit_count; ++u) 
-        {
-            let hex = unit_hex(u)
-            let e = ui.units[u]
-		    if (!ui.units_holder.contains(e))
-            ui.units_holder.appendChild(e)  
-			if(hex){
-				stack_list[hex].push(u)
-				e.stack = stack_list[hex]
-				layout_stack(stack_list[hex], hex, ui.hex_x[hex],ui.hex_y[hex],60, -1)
-			}
-        }
-	for (let hex = 0; hex < stack_list.length; ++hex) {
-		if (ui.hexes[hex]) {
-			ui.hexes[hex].classList.toggle("action", is_any_hex_action(hex))
-			ui.hexes[hex].classList.toggle("selected", is_hex_selected(hex))
-		}
-	
-	}	
+	console.log(ui.hexes_terrain)
 }
 
 //количество отрядов в гексе.
@@ -210,59 +198,58 @@ function on_blur(evt) {
 function set_clear()
 {
 	for (let h of ui.selected_hexes) {
-		ui.hexes[h].classList.toggle("Clear")
-		ui.hexes[h].classList.toggle("selected")
+		ui.hexes_terrain[h] = "Clear"
 	}
-	ui.selected_hexes = []
+	ui.selected_hexes.length = 0
+	update_map()
 }
 
 function set_broken()
 {
 	for (let h of ui.selected_hexes) {
-		ui.hexes[h].classList.toggle("Broken")
-		ui.hexes[h].classList.toggle("selected")
+		ui.hexes_terrain[h] = "Broken"
 	}
 	ui.selected_hexes = []
-
+	update_map()
 }
 
 function set_rough()
 {
 	for (let h of ui.selected_hexes) {
-		ui.hexes[h].classList.toggle("Rough")
-		ui.hexes[h].classList.toggle("selected")
-		ui.selected_hexes = []
-
 	}
+	ui.selected_hexes = []
+	update_map()
 }
 
 function set_mountainous()
 {
 	for (let h of ui.selected_hexes) {
-		ui.hexes[h].classList.toggle("Mountainous")
-		ui.hexes[h].classList.toggle("selected")
-		ui.selected_hexes = []
+		ui.hexes_terrain[h] = "Mountainous"
 	}
+	ui.selected_hexes = []
+	update_map()
 }
 
 function set_lowland()
 {
 	for (let h of ui.selected_hexes) {
-		ui.hexes[h].classList.toggle("Lowland")
-		ui.hexes[h].classList.toggle("selected")
-		ui.selected_hexes = []
+		ui.hexes_terrain[h] ="Lowland"
 	}
+	update_map()
 }
 
 function set_flood_plain()
 {
 	for (let h of ui.selected_hexes) {
 		ui.hexes[h].classList.toggle("Flood")	
-		ui.hexes[h].classList.toggle("selected")
 	}
 }
 
-
+function save_result()
+{
+	const data = JSON.stringify(ui.hexes_terrain);
+		console.log(data);
+}
 
 
 // Дебаг. Следим за координатами курсором.
