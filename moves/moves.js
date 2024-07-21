@@ -26,15 +26,13 @@ let ui = {
     units_holder: document.getElementById("units"),
     focus: null,
 	selected_hexes: [],
+	active_hexes: [],
 	hexes_terrain: hexes_terrain,
 	path: [],
 
 }
-let unit = {
-	MF: 5,
-}
 
-const H_MF_COST = 1
+
 
 //ui.hexes_terrain = array
 
@@ -52,7 +50,7 @@ function is_any_hex_action(hex) {
 
 
 function is_hex_selected(hex) {
-	if (hex === view.pursuit || hex === view.battle || hex === view.selected_hexes)
+	if (hex === view.selected_hexes)
 		return true
 	if (Array.isArray(view.selected_hexes) && view.selected_hexes.includes(hex))
 		return true
@@ -134,7 +132,6 @@ function build_hexes() {
 				hex.addEventListener("mouseenter", on_focus_hex)
 				hex.addEventListener("mouseleave", on_blur)        
                 hex.hex = hex_id
-				hex.classList.add("action")
 
 				// Создание текстового элемента для отображения текста в шестиугольнике
 				let t_hex = ui.t_ids[hex_id] = document.createElementNS(svgNS, "text");
@@ -146,11 +143,7 @@ function build_hexes() {
 				t_hex.textContent = `h: ${hex_id}`
 				t_hex.id = hex_id
 
-				// Добавляем текстовый элемент в SVG канвас
-
 				document.getElementById("mapsvg").getElementById("hexes").appendChild(t_hex);
-
-
                 document.getElementById("mapsvg").getElementById("hexes").appendChild(hex)
             }
 	}
@@ -161,12 +154,18 @@ build_hexes()
 
 
 function update_map() {
-	ui.selected_hexes = []
 	for (let hex = 0; hex < mapsize; hex++) {
-		ui.hexes[hex].classList.remove("selected", "Clear", "Broken", "Mountainous",  "Lowland", "Flood")
-		ui.hexes[hex].classList.toggle(ui.hexes_terrain[hex])
+		ui.hexes[hex].classList.remove("action","selected", "Clear", "Broken", "Mountainous",  "Lowland", "Flood")
 	}
-	console.log(ui.hexes_terrain)
+
+	view.actions.forEach(function(acitve) {
+		ui.hexes[acitve].classList.add("action")
+	});
+
+	view.selected.forEach(function(selected) {
+		ui.hexes[selected].classList.add("selected")
+	});
+
 }
 
 //количество отрядов в гексе.
@@ -179,12 +178,17 @@ function on_focus_hex(evt) {
 
 function on_click_hex(evt) {
 	// снимаем тег активности со всех гексов. Это заплатка
-	let hex  =evt.target.hex
-	for (let h = 0; h < mapsize; h++) {
-		ui.hexes[h].classList.remove("action")
-	}
-	start_new_path(hex)
+	let hex  = evt.target.hex
 
+	if (view.actions.includes(hex) || view.selected.includes(hex))
+	{
+		if (state === 0){
+			start_new_path(hex)
+		}
+		else{
+			end_path(hex)
+		}
+	}
 }
 
 function on_blur(evt) {
@@ -192,52 +196,115 @@ function on_blur(evt) {
 }
 
 ///---Это тут самое главное. 
+
+///Моки
+
+let view = {
+	actions: [],
+	path: [],
+	selected: [],
+	units: [{
+		MF:3,
+		facing: 0,
+	}],
+}
+
+let unit = view.units[0]
+
+const H_MF_COST = 1
+
+//стадиии формирования пути
+// 0-формируем путь
+// 1-закончили формировать путь
+
+let state = 0 
+
+//делаем все гексы активными
+for (let hex = 0; hex < mapsize; hex++) {
+	view.actions.push(hex)	
+}
+update_map()
+
+
 //запускаем путь. 
 // hex - стартовый гекс
 //MF количество очков движения юнита
+
 function start_new_path(hex){
     // Проверяем наличие элемента hex в массиве path
-	if (ui.path.includes(hex)) {
-		let index = ui.path.indexOf(hex)
+	if (view.selected.includes(hex)) {
+		let index = view.selected.indexOf(hex)
 		// Если элемент есть и он последний
-		if (index === ui.path.length - 1) {
-			console.log("Построение пути закончено. Надо сделать фейсинг")
+		if (index === view.selected.length - 1) {
 			console.log(`mf->${unit.MF}`)
+			facing(hex)
+			state = 1
 		} else {
 			// Удаляем все элементы после hex
-			let removed = ui.path.splice(index + 1, ui.path.length - index - 1)
-			removed.forEach(function(element) {
-				ui.hexes[element].classList.remove("selected")
-			});
+			let removed = view.selected.splice(index + 1, view.selected.length - index - 1)
 			unit.MF = unit.MF + removed.length
 			active_adjacents_for_move(hex, unit.MF)
 		}
 	} else {
 		// Если элемента нет, то добавляем
-		ui.path.push(hex);
-		ui.hexes[hex].classList.add("selected")
+		view.actions.length = 0
+		view.selected.push(hex)
 		active_adjacents_for_move(hex,unit.MF)
-		unit.MF--
+		if(view.actions.length===0)
+		{
+			console.log("ходы закончились")
+		}
+		else{
+			unit.MF--
+		}
 	}
-	console.log("Итоговый массив path:", ui.path);
+	console.log(view.selected)
 	console.log(`mf->${unit.MF}`)
-	console.log(ui.path)
+	update_map()
 }
 
+function end_path(hex)
+{
+	console.log("прошли такой путь")
+	console.log(view.selected)
+	console.log(`Отряд смотрит на гекс: ${hex}`)
+	view.actions.length = 0
+	view.selected.length = 0
+	update_map()
+}
 
 function active_adjacents_for_move(hex, mf)
-{
+{	
 	for (let h = 0; h < mapsize; h++) {
 		if (calc_distance(hex,h)<=dist & mf>=H_MF_COST )
 		{
-			ui.hexes[h].classList.add("action")
+			view.actions.push(h)
 		}
+	}
+
 }
 
+function get_adjacents(hex)
+{
+	let hexes = []
+	for (let h = 0; h < mapsize; h++) {
+		if (calc_distance(hex,h)<=1)
+		{
+			hexes.push(h)
+		}
+	}
+	return hexes
+}
 
 function facing(hex)
 {
-
+	console.log("Выберете ориентацию отряда")
+	let adj_hexes = get_adjacents(hex)
+	adj_hexes.forEach(
+		function(element) {
+		view.actions.push(element)
+	})
+	update_map()
 }
 
 
@@ -260,5 +327,6 @@ document.addEventListener('mousemove', (event) => {
     coordsDiv.style.left = `${mouseX + 10}px`;
     coordsDiv.style.top = `${mouseY + 10}px`;
     coordsDiv.textContent = `X: ${mouseX}, Y: ${mouseY}}` ;
-});
-}
+})
+
+
