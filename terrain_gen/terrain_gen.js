@@ -211,20 +211,28 @@ function set_clear()
 {
 	for (let h of ui.selected_hexes) {
 		ui.hexes[h].classList.toggle("Clear")
+		ui.hexes[h].classList.toggle("selected")
 	}
+	ui.selected_hexes = []
 }
 
 function set_broken()
 {
 	for (let h of ui.selected_hexes) {
 		ui.hexes[h].classList.toggle("Broken")
+		ui.hexes[h].classList.toggle("selected")
 	}
+	ui.selected_hexes = []
+
 }
 
 function set_rough()
 {
 	for (let h of ui.selected_hexes) {
 		ui.hexes[h].classList.toggle("Rough")
+		ui.hexes[h].classList.toggle("selected")
+		ui.selected_hexes = []
+
 	}
 }
 
@@ -232,6 +240,8 @@ function set_mountainous()
 {
 	for (let h of ui.selected_hexes) {
 		ui.hexes[h].classList.toggle("Mountainous")
+		ui.hexes[h].classList.toggle("selected")
+		ui.selected_hexes = []
 	}
 }
 
@@ -239,6 +249,8 @@ function set_lowland()
 {
 	for (let h of ui.selected_hexes) {
 		ui.hexes[h].classList.toggle("Lowland")
+		ui.hexes[h].classList.toggle("selected")
+		ui.selected_hexes = []
 	}
 }
 
@@ -246,6 +258,7 @@ function set_flood_plain()
 {
 	for (let h of ui.selected_hexes) {
 		ui.hexes[h].classList.toggle("Flood")	
+		ui.hexes[h].classList.toggle("selected")
 	}
 }
 

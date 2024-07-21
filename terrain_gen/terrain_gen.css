@@ -42,7 +42,6 @@ header.your_turn { background-color: orange; }
 }
 
 
-
 svg .hex.action {
 	stroke: red;
 	stroke-dasharray: 2 2;
@@ -66,6 +65,15 @@ svg .hex.tip {
 	stroke-dasharray: 4 4;
 }
 
+svg .hex.Clear {
+	fill: rgba(235, 238, 144, 0.3);
+	}
+svg .hex.Broken {
+	fill: rgba(116, 240, 109, 0.3);
+	}
+	
+	
+	
 
 #coords {
 	position: fixed;
