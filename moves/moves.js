@@ -28,6 +28,7 @@ let ui = {
 	selected_hexes: [],
 	active_hexes: [],
 	hexes_terrain: hexes_terrain,
+	hexes_mf_cost:[],
 	path: [],
 
 }
@@ -132,6 +133,7 @@ function build_hexes() {
 				hex.addEventListener("mouseenter", on_focus_hex)
 				hex.addEventListener("mouseleave", on_blur)        
                 hex.hex = hex_id
+				hex.hexes_mf_cost = get_mf_cos(hex_id)
 
 				// Создание текстового элемента для отображения текста в шестиугольнике
 				let t_hex = ui.t_ids[hex_id] = document.createElementNS(svgNS, "text");
@@ -204,14 +206,13 @@ let view = {
 	path: [],
 	selected: [],
 	units: [{
-		MF:3,
+		MF:30,
 		facing: 0,
 	}],
 }
 
 let unit = view.units[0]
 
-const H_MF_COST = 1
 
 //стадиии формирования пути
 // 0-формируем путь
@@ -236,27 +237,27 @@ function start_new_path(hex){
 		let index = view.selected.indexOf(hex)
 		// Если элемент есть и он последний
 		if (index === view.selected.length - 1) {
-			console.log(`mf->${unit.MF}`)
 			facing(hex)
 			state = 1
 		} else {
 			// Удаляем все элементы после hex
 			let removed = view.selected.splice(index + 1, view.selected.length - index - 1)
-			unit.MF = unit.MF + removed.length
+			console.log(`откатились на гекс ${hex}`)
+			removed.forEach(
+				function(r) {
+					unit.MF = unit.MF + ui.hexes[r].hexes_mf_cost
+			})
 			active_adjacents_for_move(hex, unit.MF)
 		}
 	} else {
 		// Если элемента нет, то добавляем
 		view.actions.length = 0
-		view.selected.push(hex)
-		active_adjacents_for_move(hex,unit.MF)
-		if(view.actions.length===0)
+		if(view.selected.length!=0)
 		{
-			console.log("ходы закончились")
+			unit.MF= unit.MF - ui.hexes[hex].hexes_mf_cost
 		}
-		else{
-			unit.MF--
-		}
+		active_adjacents_for_move(hex,unit.MF)
+		view.selected.push(hex)
 	}
 	console.log(view.selected)
 	console.log(`mf->${unit.MF}`)
@@ -275,12 +276,15 @@ function end_path(hex)
 
 function active_adjacents_for_move(hex, mf)
 {	
-	for (let h = 0; h < mapsize; h++) {
-		if (calc_distance(hex,h)<=dist & mf>=H_MF_COST )
-		{
-			view.actions.push(h)
-		}
-	}
+	let hexes = get_adjacents(hex)
+
+	hexes.forEach(
+		function(h) {
+			if(ui.hexes[h].hexes_mf_cost <= mf)
+			{		
+				view.actions.push(h)
+			}
+	})
 
 }
 
@@ -307,6 +311,17 @@ function facing(hex)
 	update_map()
 }
 
+function get_mf_cos(hex_id){
+	switch(hexes_terrain[hex_id]) {
+		case 'Clear':
+			return 10
+		case 'Broken':
+			return 12
+		default:
+			return 10
+	  }
+	
+}
 
 
 ///---Конец главного
