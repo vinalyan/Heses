@@ -232,16 +232,17 @@ update_map()
 //MF количество очков движения юнита
 
 function start_new_path(hex){
+	let MF = 20
     // Проверяем наличие элемента hex в массиве path
 	if (view.selected.includes(hex)) {
-		let index = view.selected.indexOf(hex)
+		let index = game.selected.indexOf(hex)
 		// Если элемент есть и он последний
-		if (index === view.selected.length - 1) {
+		if (index === game.selected.length - 1) {
 			facing(hex)
 			state = 1
 		} else {
 			// Удаляем все элементы после hex
-			let removed = view.selected.splice(index + 1, view.selected.length - index - 1)
+			let removed = game.selected.splice(index + 1, game.selected.length - index - 1)
 			console.log(`откатились на гекс ${hex}`)
 			removed.forEach(
 				function(r) {
@@ -251,16 +252,16 @@ function start_new_path(hex){
 		}
 	} else {
 		// Если элемента нет, то добавляем
-		view.actions.length = 0
-		if(view.selected.length!=0)
+		game.actions.length = 0
+		if(game.selected.length!=0)
 		{
-			unit.MF= unit.MF - ui.hexes[hex].hexes_mf_cost
+			MF= MF - ui.hexes[hex].hexes_mf_cost
 		}
-		active_adjacents_for_move(hex,unit.MF)
-		view.selected.push(hex)
+		active_adjacents_for_move(hex,MF)
+		set_add()
 	}
 	console.log(view.selected)
-	console.log(`mf->${unit.MF}`)
+	console.log(`mf->${MF}`)
 	update_map()
 }
 

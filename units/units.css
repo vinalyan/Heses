@@ -1,0 +1,28 @@
+.unit {
+    width: 77px;
+    height: 77px;
+    background-size: cover;
+    position: relative;
+}
+
+.quality-image {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+}
+
+.unit{
+	background-image: url(/Units/1/1.png);
+	background-size: 77px 77px;
+	height: 100%;
+	width: 100%;
+	width: 77px;
+	height: 77px;
+	z-index: 100;
+}
+
+.unit {
+	background-color: hsl(80, 20%, 60%);
+	border-color: hsl(80, 20%, 50%);
+	box-shadow: 0 0 4px 3px hsl(345, 20%, 20%);
+}
